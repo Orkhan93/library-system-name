@@ -11,6 +11,7 @@ import az.developia.librarysystemname.response.UserResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -21,6 +22,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
     public UserResponse register(@Valid @RequestBody UserRegistrationRequest registrationRequest)
             throws UserAlreadyExistException {
@@ -29,8 +31,9 @@ public class UserService {
             throw UserAlreadyExistException.of(ErrorCode.ALREADY_EXIST.name(), ErrorMessage.USER_ALREADY_EXITS);
         }
         if (validationSignup(registrationRequest)) {
-            User user = userRepository.save(userMapper.fromUserRegisterRequestToModel(registrationRequest));
-            return userMapper.fromModelToResponse(user);
+            User user = userMapper.fromUserRegisterRequestToModel(registrationRequest);
+            user.setPassword(passwordEncoder.encode(registrationRequest.getPassword()));
+            return userMapper.fromModelToResponse(userRepository.save(user));
         } else
             throw UserAlreadyExistException.of(ErrorCode.INTERNAL_SERVER_ERROR.name(), ErrorMessage.SOMETHING_WENT_WRONG);
     }

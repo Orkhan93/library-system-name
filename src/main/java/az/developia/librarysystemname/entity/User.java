@@ -35,4 +35,8 @@ public class User {
 
     @Column(name = "userRole")
     private String userRole;
+
+    @Column(name = "status")
+    private String status;
+
 }
