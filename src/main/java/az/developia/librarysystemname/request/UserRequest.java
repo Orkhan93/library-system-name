@@ -12,6 +12,7 @@ public class UserRequest {
     private String email;
     private String firstName;
     private String lastName;
-    private final String userRole = "user";
+    private final String userRole = "student";
+    private final String status = "false";
 
 }

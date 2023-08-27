@@ -24,12 +24,13 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@Valid @RequestBody UserRegistrationRequest registrationRequest) throws UserAlreadyExistException {
+    public ResponseEntity<String> register(@Valid @RequestBody UserRegistrationRequest registrationRequest)
+            throws UserAlreadyExistException {
         try {
             userService.register(registrationRequest);
             return LibraryUtil.getResponseMessage(LibraryConstant.SUCCESSFULLY_REGISTER, HttpStatus.OK);
         } catch (UserAlreadyExistException ex) {
-            throw new UserAlreadyExistException(ErrorCode.ALREADY_EXIST.name(), ErrorMessage.USER_ALREADY_EXITS);
+            return new ResponseEntity<String>(ErrorMessage.USER_ALREADY_EXITS, HttpStatus.BAD_REQUEST);
         }
     }
 
