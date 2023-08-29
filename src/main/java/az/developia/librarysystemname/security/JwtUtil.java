@@ -1,10 +1,12 @@
 package az.developia.librarysystemname.security;
 
+import az.developia.librarysystemname.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +19,8 @@ import java.util.function.Function;
 @Service
 public class JwtUtil {
 
-    public static final String SECRET_KEY = "1234512345123451234512345123451234512345123451234512345123451234";
+    @Value("${jwt.secret.key}")
+    private String secretKey;
 
     public String extractUsername(String token) {
         return extractClaims(token, Claims::getSubject);
@@ -66,7 +69,7 @@ public class JwtUtil {
     }
 
     private Key getSignKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
