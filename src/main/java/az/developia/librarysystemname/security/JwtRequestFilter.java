@@ -25,18 +25,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     Claims claims = null;
     private String currentUser = null;
 
-    public boolean isAdmin() {
-        return "admin".equalsIgnoreCase((String) claims.get("role"));
-    }
-
-    public boolean isUser() {
-        return "user".equalsIgnoreCase((String) claims.get("role"));
-    }
-
-    public String getCurrentUser() {
-        return currentUser;
-    }
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
@@ -62,4 +50,17 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         }
         filterChain.doFilter(request, response);
     }
+
+    public boolean isLibrarian() {
+        return "librarian".equalsIgnoreCase((String) claims.get("role"));
+    }
+
+    public boolean isStudent() {
+        return "student".equalsIgnoreCase((String) claims.get("role"));
+    }
+
+    public String getCurrentUser() {
+        return currentUser;
+    }
+
 }
