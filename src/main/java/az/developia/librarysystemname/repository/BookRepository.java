@@ -10,4 +10,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     List<BookWrapper> getAllProduct();
 
+    List<Book> findByUser_Id(Long userId);
+
 }

@@ -1,5 +1,7 @@
 package az.developia.librarysystemname.wrapper;
 
+import az.developia.librarysystemname.entity.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,7 +16,8 @@ public class BookWrapper {
     private String description;
     private String price;
     private String status;
-    private Long userId;
-    private String userName;
+
+    @JsonIgnore
+    private User user;
 
 }

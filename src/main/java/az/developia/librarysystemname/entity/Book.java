@@ -1,5 +1,6 @@
 package az.developia.librarysystemname.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -13,7 +14,7 @@ import jakarta.persistence.Table;
 import lombok.Data;
 
 @NamedQuery(name = "Book.getAllProduct",
-        query = "select new az.developia.librarysystemname.wrapper.BookWrapper(b.id,b.name,b.description,b.price,b.status,b.user.id,b.user.username)" +
+        query = "select new az.developia.librarysystemname.wrapper.BookWrapper(b.id,b.name,b.description,b.price,b.status,b.user)" +
                 " from Book b inner join User u on b.user.id=u.id and u.userRole='librarian'")
 
 @Entity
@@ -38,6 +39,7 @@ public class Book {
     @Column(name = "status")
     private String status;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
