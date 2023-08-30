@@ -1,8 +1,12 @@
 package az.developia.librarysystemname.service;
 
+import az.developia.librarysystemname.constant.LibraryConstant;
 import az.developia.librarysystemname.entity.Book;
 import az.developia.librarysystemname.entity.User;
+import az.developia.librarysystemname.enums.ErrorCode;
 import az.developia.librarysystemname.enums.Role;
+import az.developia.librarysystemname.error.ErrorMessage;
+import az.developia.librarysystemname.exception.ServiceException;
 import az.developia.librarysystemname.repository.BookRepository;
 import az.developia.librarysystemname.repository.UserRepository;
 import az.developia.librarysystemname.request.BookRequest;
@@ -19,11 +23,15 @@ import java.util.List;
 import java.util.Optional;
 
 import static az.developia.librarysystemname.constant.LibraryConstant.ADDED_SUCCESSFULLY;
+import static az.developia.librarysystemname.constant.LibraryConstant.DOES_NOT_EXIST;
 import static az.developia.librarysystemname.constant.LibraryConstant.INVALID_DATA;
 import static az.developia.librarysystemname.constant.LibraryConstant.SOMETHING_WENT_WRONG;
+import static az.developia.librarysystemname.constant.LibraryConstant.SUCCESSFULLY_DELETED;
+import static az.developia.librarysystemname.constant.LibraryConstant.SUCCESSFULLY_UPDATED;
 import static az.developia.librarysystemname.constant.LibraryConstant.UNAUTHORIZED_ACCESS;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
@@ -52,6 +60,41 @@ public class BookService {
             ex.printStackTrace();
         }
         return LibraryUtil.getResponseMessage(SOMETHING_WENT_WRONG, INTERNAL_SERVER_ERROR);
+    }
+
+    public ResponseEntity<String> updateBook(BookRequest bookRequest, Long bookId) {
+        User optionalUser = userRepository.findById(bookRequest.getUserId()).orElseThrow(() ->
+                ServiceException.of(ErrorCode.USER_NOT_FOUND.name(), ErrorMessage.USER_NOT_FOUND));
+        try {
+            if (optionalUser.getUserRole().equalsIgnoreCase(Role.LIBRARIAN.name())) {
+                if (validationBookRequest(bookRequest, true)) {
+                    Optional<Book> optionalBook = bookRepository.findById(bookId);
+                    if (optionalBook.isPresent()) {
+                        Book book = new Book();
+                        book.setName(bookRequest.getName());
+                        book.setPrice(bookRequest.getPrice());
+                        book.setDescription(bookRequest.getDescription());
+                        bookRepository.save(book);
+                        return LibraryUtil.getResponseMessage(SUCCESSFULLY_UPDATED, OK);
+                    } else
+                        LibraryUtil.getResponseMessage(DOES_NOT_EXIST, OK);
+                } else
+                    LibraryUtil.getResponseMessage(INVALID_DATA, BAD_REQUEST);
+            } else
+                return LibraryUtil.getResponseMessage(UNAUTHORIZED_ACCESS, UNAUTHORIZED);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return LibraryUtil.getResponseMessage(SOMETHING_WENT_WRONG, INTERNAL_SERVER_ERROR);
+    }
+
+    public ResponseEntity<String> deleteBook(Long id) {
+        Optional<Book> optionalBook = bookRepository.findById(id);
+        if (optionalBook.isPresent()) {
+            bookRepository.deleteById(id);
+            return LibraryUtil.getResponseMessage(SUCCESSFULLY_DELETED, OK);
+        }
+        return LibraryUtil.getResponseMessage(DOES_NOT_EXIST, NOT_FOUND);
     }
 
     public ResponseEntity<List<BookWrapper>> getAllBook() {

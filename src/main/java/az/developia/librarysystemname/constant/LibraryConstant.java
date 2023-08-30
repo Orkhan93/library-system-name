@@ -10,5 +10,8 @@ public class LibraryConstant {
     public static final String WAIT_FOR_APPROVAL = "Wait for librarian approval.";
     public static final String BAD_CREDENTIALS = "Bad Credentials.";
     public static final String ADDED_SUCCESSFULLY = "Book added successfully.";
+    public static final String DOES_NOT_EXIST = "Book id does not exist.";
+    public static final String SUCCESSFULLY_UPDATED = "Book updated successfully.";
+    public static final String SUCCESSFULLY_DELETED = "Book deleted successfully.";
 
 }
