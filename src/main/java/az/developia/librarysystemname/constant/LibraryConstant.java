@@ -9,5 +9,6 @@ public class LibraryConstant {
     public static final String UNAUTHORIZED_ACCESS = "Unauthorized access.";
     public static final String WAIT_FOR_APPROVAL = "Wait for librarian approval.";
     public static final String BAD_CREDENTIALS = "Bad Credentials.";
+    public static final String ADDED_SUCCESSFULLY = "Book added successfully.";
 
 }

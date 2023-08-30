@@ -34,7 +34,7 @@ public class UserRegistrationRequest {
     @NotBlank
     private String lastName;
 
-    private final String status = "false";
-    private final String userRole = "user";
+    private final String status;
+    private final String userRole;
 
 }
