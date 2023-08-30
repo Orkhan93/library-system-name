@@ -10,6 +10,8 @@ import lombok.Data;
 @Data
 public class UserRegistrationRequest {
 
+    private Long id;
+
     @NotNull
     @NotBlank
     @Size(min = 3, max = 255)
@@ -34,7 +36,7 @@ public class UserRegistrationRequest {
     @NotBlank
     private String lastName;
 
-    private final String status;
-    private final String userRole;
+    private String status;
+    private final String userRole = "student";
 
 }
