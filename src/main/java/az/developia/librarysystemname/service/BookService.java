@@ -2,7 +2,10 @@ package az.developia.librarysystemname.service;
 
 import az.developia.librarysystemname.entity.Book;
 import az.developia.librarysystemname.entity.User;
+import az.developia.librarysystemname.enums.ErrorCode;
 import az.developia.librarysystemname.enums.Role;
+import az.developia.librarysystemname.error.ErrorMessage;
+import az.developia.librarysystemname.exception.ServiceException;
 import az.developia.librarysystemname.mapper.BookMapper;
 import az.developia.librarysystemname.repository.BookRepository;
 import az.developia.librarysystemname.repository.UserRepository;
@@ -62,22 +65,24 @@ public class BookService {
     }
 
     public ResponseEntity<BookResponse> updateBook(User user, Long userId, Long bookId, BookRequest bookRequest) {
-
-        if (!userHasPermission(user, userId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        if (bookRequest.getId() == bookId) {
-            Optional<Book> optionalBook = bookRepository.findById(bookId);
-            if (optionalBook.isPresent()) {
-                User optionalUser = optionalBook.get().getUser();
-                if (optionalUser.getId() == userId) {
-                    bookRequest.setUser(optionalUser);
-                    return ResponseEntity.ok(bookMapper.fromModelToResponse
-                            (bookRepository.save(bookMapper.fromRequestToModel(bookRequest))));
-                }
+        Optional<User> findUser = userRepository.findById(userId);
+        User refUser = findUser.get();
+        if (refUser.getUserRole().equalsIgnoreCase(Role.LIBRARIAN.name())) {
+            if (bookRequest.getId() == bookId) {
+                Optional<Book> optionalBook = bookRepository.findById(bookId);
+                if (optionalBook.isPresent()) {
+                    User optionalUser = optionalBook.get().getUser();
+                    if (optionalUser.getId() == userId) {
+                        bookRequest.setUser(optionalUser);
+                        return ResponseEntity.ok(bookMapper.fromModelToResponse
+                                (bookRepository.save(bookMapper.fromRequestToModel(bookRequest))));
+                    }
+                } else
+                    throw ServiceException.of(ErrorCode.BOOK_NOT_FOUND.name(), ErrorMessage.BOOK_NOT_FOUND);
             }
-        }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        } else
+            throw ServiceException.of(ErrorCode.UNAUTHORIZED_ACCESS.name(), ErrorMessage.UNAUTHORIZED_ACCESS);
+        return ResponseEntity.status(BAD_REQUEST).build();
     }
 
     public ResponseEntity<String> deleteBook(Long id) {
@@ -111,7 +116,6 @@ public class BookService {
         }
         return new ResponseEntity<>(new ArrayList<>(), INTERNAL_SERVER_ERROR);
     }
-
 
     private Book getBookFromRequest(BookRequest bookRequest, boolean isAdd) {
         User user = new User();
