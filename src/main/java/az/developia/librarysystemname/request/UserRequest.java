@@ -1,10 +1,8 @@
 package az.developia.librarysystemname.request;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Setter
-@Getter
+@Data
 public class UserRequest {
 
     private String username;
@@ -12,7 +10,7 @@ public class UserRequest {
     private String email;
     private String firstName;
     private String lastName;
-    private final String userRole = "student";
-    private final String status = "false";
+    private final String userRole;
+    private final String status;
 
 }

@@ -21,7 +21,7 @@ public class UserLoginRequest {
     @Email
     private String email;
 
-    private final String status = "false";
-    private final String userRole = "user";
+    private final String status;
+    private final String userRole;
 
 }
