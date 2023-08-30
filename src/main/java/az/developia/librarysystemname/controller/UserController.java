@@ -1,7 +1,6 @@
 package az.developia.librarysystemname.controller;
 
 import az.developia.librarysystemname.constant.LibraryConstant;
-import az.developia.librarysystemname.enums.ErrorCode;
 import az.developia.librarysystemname.error.ErrorMessage;
 import az.developia.librarysystemname.exception.UserAlreadyExistException;
 import az.developia.librarysystemname.request.UserLoginRequest;
@@ -14,7 +13,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
