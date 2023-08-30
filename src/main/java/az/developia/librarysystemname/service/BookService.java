@@ -1,20 +1,18 @@
 package az.developia.librarysystemname.service;
 
-import az.developia.librarysystemname.constant.LibraryConstant;
 import az.developia.librarysystemname.entity.Book;
 import az.developia.librarysystemname.entity.User;
-import az.developia.librarysystemname.enums.ErrorCode;
 import az.developia.librarysystemname.enums.Role;
-import az.developia.librarysystemname.error.ErrorMessage;
-import az.developia.librarysystemname.exception.ServiceException;
+import az.developia.librarysystemname.mapper.BookMapper;
 import az.developia.librarysystemname.repository.BookRepository;
 import az.developia.librarysystemname.repository.UserRepository;
 import az.developia.librarysystemname.request.BookRequest;
-import az.developia.librarysystemname.security.JwtRequestFilter;
+import az.developia.librarysystemname.response.BookResponse;
 import az.developia.librarysystemname.util.LibraryUtil;
 import az.developia.librarysystemname.wrapper.BookWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -26,8 +24,8 @@ import static az.developia.librarysystemname.constant.LibraryConstant.ADDED_SUCC
 import static az.developia.librarysystemname.constant.LibraryConstant.DOES_NOT_EXIST;
 import static az.developia.librarysystemname.constant.LibraryConstant.INVALID_DATA;
 import static az.developia.librarysystemname.constant.LibraryConstant.SOMETHING_WENT_WRONG;
+import static az.developia.librarysystemname.constant.LibraryConstant.SUCCESSFULLY_BOOK_UPDATED;
 import static az.developia.librarysystemname.constant.LibraryConstant.SUCCESSFULLY_DELETED;
-import static az.developia.librarysystemname.constant.LibraryConstant.SUCCESSFULLY_UPDATED;
 import static az.developia.librarysystemname.constant.LibraryConstant.UNAUTHORIZED_ACCESS;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
@@ -42,10 +40,11 @@ public class BookService {
 
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
+    private final BookMapper bookMapper;
 
     public ResponseEntity<String> addBook(BookRequest bookRequest) {
         log.info("Inside bookRequest {}", bookRequest);
-        Optional<User> optionalUser = userRepository.findById(bookRequest.getUserId());
+        Optional<User> optionalUser = userRepository.findById(bookRequest.getUser().getId());
         User user = optionalUser.get();
         try {
             if (user.getUserRole().equalsIgnoreCase(Role.LIBRARIAN.name())) {
@@ -62,30 +61,23 @@ public class BookService {
         return LibraryUtil.getResponseMessage(SOMETHING_WENT_WRONG, INTERNAL_SERVER_ERROR);
     }
 
-    public ResponseEntity<String> updateBook(BookRequest bookRequest, Long bookId) {
-        User optionalUser = userRepository.findById(bookRequest.getUserId()).orElseThrow(() ->
-                ServiceException.of(ErrorCode.USER_NOT_FOUND.name(), ErrorMessage.USER_NOT_FOUND));
-        try {
-            if (optionalUser.getUserRole().equalsIgnoreCase(Role.LIBRARIAN.name())) {
-                if (validationBookRequest(bookRequest, true)) {
-                    Optional<Book> optionalBook = bookRepository.findById(bookId);
-                    if (optionalBook.isPresent()) {
-                        Book book = new Book();
-                        book.setName(bookRequest.getName());
-                        book.setPrice(bookRequest.getPrice());
-                        book.setDescription(bookRequest.getDescription());
-                        bookRepository.save(book);
-                        return LibraryUtil.getResponseMessage(SUCCESSFULLY_UPDATED, OK);
-                    } else
-                        LibraryUtil.getResponseMessage(DOES_NOT_EXIST, OK);
-                } else
-                    LibraryUtil.getResponseMessage(INVALID_DATA, BAD_REQUEST);
-            } else
-                return LibraryUtil.getResponseMessage(UNAUTHORIZED_ACCESS, UNAUTHORIZED);
-        } catch (Exception ex) {
-            ex.printStackTrace();
+    public ResponseEntity<BookResponse> updateBook(User user, Long userId, Long bookId, BookRequest bookRequest) {
+
+        if (!userHasPermission(user, userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        return LibraryUtil.getResponseMessage(SOMETHING_WENT_WRONG, INTERNAL_SERVER_ERROR);
+        if (bookRequest.getId() == bookId) {
+            Optional<Book> optionalBook = bookRepository.findById(bookId);
+            if (optionalBook.isPresent()) {
+                User optionalUser = optionalBook.get().getUser();
+                if (optionalUser.getId() == userId) {
+                    bookRequest.setUser(optionalUser);
+                    return ResponseEntity.ok(bookMapper.fromModelToResponse
+                            (bookRepository.save(bookMapper.fromRequestToModel(bookRequest))));
+                }
+            }
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 
     public ResponseEntity<String> deleteBook(Long id) {
@@ -98,8 +90,22 @@ public class BookService {
     }
 
     public ResponseEntity<List<BookWrapper>> getAllBook() {
+        //TODO checked getAll
         try {
             return new ResponseEntity<>(bookRepository.getAllProduct(), OK);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return new ResponseEntity<>(new ArrayList<>(), INTERNAL_SERVER_ERROR);
+    }
+
+    public ResponseEntity<List<BookWrapper>> getAllBookByUserId(Long userId) {
+        try {
+            Optional<User> optionalUser = userRepository.findById(userId);
+            if (optionalUser.isPresent() && optionalUser.get().getUserRole().equalsIgnoreCase(Role.LIBRARIAN.name())) {
+                return new ResponseEntity<>(bookMapper.fromModelToWrapper(bookRepository.findByUser_Id(userId)), OK);
+            } else
+                return ResponseEntity.status(UNAUTHORIZED).build();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -109,7 +115,7 @@ public class BookService {
 
     private Book getBookFromRequest(BookRequest bookRequest, boolean isAdd) {
         User user = new User();
-        user.setId(bookRequest.getUserId());
+        user.setId(bookRequest.getUser().getId());
 
         Book book = new Book();
         if (isAdd) {
@@ -133,6 +139,10 @@ public class BookService {
             }
         }
         return false;
+    }
+
+    public boolean userHasPermission(User user, Long id) {
+        return user.getId() == id;
     }
 
 }

@@ -6,6 +6,7 @@ import az.developia.librarysystemname.error.ErrorMessage;
 import az.developia.librarysystemname.exception.UserAlreadyExistException;
 import az.developia.librarysystemname.request.UserLoginRequest;
 import az.developia.librarysystemname.request.UserRegistrationRequest;
+import az.developia.librarysystemname.request.UserRequest;
 import az.developia.librarysystemname.response.AuthenticationResponse;
 import az.developia.librarysystemname.service.UserService;
 import az.developia.librarysystemname.util.LibraryUtil;
@@ -14,7 +15,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -47,6 +50,27 @@ public class UserController {
             response.setJwtToken(jwt);
             return ResponseEntity.ok(response);
         }
+    }
+
+    @PostMapping("/update/{userId}")
+    public ResponseEntity<String> updateStatus(@PathVariable Long userId, @RequestBody UserRegistrationRequest registrationRequest) {
+        try {
+            return userService.updateStatus(userId, registrationRequest);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return LibraryUtil.getResponseMessage(LibraryConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @PutMapping("update/{userId}")
+    public ResponseEntity<String> update(@PathVariable Long userId,
+                                         @RequestBody UserRequest request) {
+        try {
+            userService.update(userId, request);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return LibraryUtil.getResponseMessage(LibraryConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }
