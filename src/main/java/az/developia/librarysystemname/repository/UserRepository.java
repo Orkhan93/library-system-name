@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -15,6 +16,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmailIgnoreCase(String email);
 
     Optional<User> findByUsernameIgnoreCase(String username);
+
+    List<User> findByFirstName(String firstName);
+    List<User> findByLastName(String lastName);
+    List<User> findByStatus(String status);
 
     @Transactional
     @Modifying

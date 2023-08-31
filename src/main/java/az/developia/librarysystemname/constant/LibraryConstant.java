@@ -14,6 +14,7 @@ public class LibraryConstant {
     public static final String DOES_NOT_EXIST = "Book id does not exist.";
     public static final String SUCCESSFULLY_BOOK_UPDATED = "Book updated successfully.";
     public static final String SUCCESSFULLY_USER_UPDATED = "User updated successfully.";
-    public static final String SUCCESSFULLY_DELETED = "Book deleted successfully.";
+    public static final String SUCCESSFULLY_BOOK_DELETED = "Book deleted successfully.";
+    public static final String SUCCESSFULLY_USER_DELETED = "User deleted successfully.";
 
 }

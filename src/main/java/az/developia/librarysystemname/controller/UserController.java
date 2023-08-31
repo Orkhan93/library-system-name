@@ -7,18 +7,24 @@ import az.developia.librarysystemname.request.UserLoginRequest;
 import az.developia.librarysystemname.request.UserRegistrationRequest;
 import az.developia.librarysystemname.request.UserRequest;
 import az.developia.librarysystemname.response.AuthenticationResponse;
+import az.developia.librarysystemname.response.UserResponse;
 import az.developia.librarysystemname.service.UserService;
 import az.developia.librarysystemname.util.LibraryUtil;
+import az.developia.librarysystemname.wrapper.UserWrapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/user")
@@ -50,7 +56,7 @@ public class UserController {
         }
     }
 
-    @PostMapping("/update/{userId}")
+    @PostMapping("/updateStatus/{userId}")
     public ResponseEntity<String> updateStatus(@PathVariable Long userId, @RequestBody UserRegistrationRequest registrationRequest) {
         try {
             return userService.updateStatus(userId, registrationRequest);
@@ -60,15 +66,42 @@ public class UserController {
         return LibraryUtil.getResponseMessage(LibraryConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @PutMapping("update/{userId}")
-    public ResponseEntity<String> update(@PathVariable Long userId,
-                                         @RequestBody UserRequest request) {
-        try {
-            userService.update(userId, request);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return LibraryUtil.getResponseMessage(LibraryConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    @GetMapping("/get/{userId}")
+    public UserResponse getUserById(@PathVariable(name = "userId") Long userId) {
+        return userService.getUserById(userId);
+    }
+
+    @GetMapping("/get/firstname/{firstName}")
+    public List<UserWrapper> getUserByFirstName(@PathVariable(name = "firstName") String firstName) {
+        return userService.getUserByFirstName(firstName);
+    }
+
+    @GetMapping("/get/lastName/{lastName}")
+    public List<UserWrapper> getUserByLastName(@PathVariable(name = "lastName") String lastName) {
+        return userService.getUserByLastName(lastName);
+    }
+
+    @GetMapping("/get/status/{status}")
+    public List<UserWrapper> getUserByStatus(@PathVariable(name = "status") String status) {
+        return userService.getUserByStatus(status);
+    }
+
+    @PutMapping("/update/{userId}")
+    public UserResponse updateUser(@PathVariable Long userId,
+                                   @RequestBody UserRequest request) {
+        return userService.updateUser(userId, request);
+    }
+
+    @PutMapping("/update/{checkId}/{userId}")
+    public ResponseEntity<UserResponse> updateUserByLibrarian(@PathVariable(name = "checkId") Long checkId,
+                                                              @PathVariable(name = "userId") Long userId,
+                                                              @RequestBody UserRequest userRequest) {
+        return userService.updateUserByLibrarian(checkId, userId, userRequest);
+    }
+
+    @DeleteMapping("/delete/{userId}")
+    public ResponseEntity<String> delete(@PathVariable(name = "userId") Long userId) {
+        return userService.delete(userId);
     }
 
 }

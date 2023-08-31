@@ -1,11 +1,15 @@
 package az.developia.librarysystemname.controller;
 
 import az.developia.librarysystemname.entity.Book;
+import az.developia.librarysystemname.entity.User;
 import az.developia.librarysystemname.mapper.BookMapper;
+import az.developia.librarysystemname.mapper.UserMapper;
 import az.developia.librarysystemname.repository.BookRepository;
+import az.developia.librarysystemname.repository.UserRepository;
 import az.developia.librarysystemname.request.FilterRequest;
 import az.developia.librarysystemname.service.FilterSpecificationService;
 import az.developia.librarysystemname.wrapper.BookWrapper;
+import az.developia.librarysystemname.wrapper.UserWrapper;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
@@ -28,7 +32,7 @@ public class FilterController {
     private final BookRepository bookRepository;
     private final BookMapper bookMapper;
 
-    @PostMapping("/specification")
+    @PostMapping("/specification/book")
     public List<BookWrapper> getBooksWithFilter(@RequestBody FilterRequest filterRequest) {
         Specification<Book> specification = specificationService.getSearchSpecification(filterRequest.getSearchRequest());
         return bookMapper.fromModelToWrapper(bookRepository.findAll(specification));

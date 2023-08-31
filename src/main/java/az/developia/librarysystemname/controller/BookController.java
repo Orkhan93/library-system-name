@@ -55,7 +55,7 @@ public class BookController {
 
     @GetMapping("/get/name/{name}")
     public List<BookWrapper> getBookByName(@PathVariable(name = "name") String name) {
-       return bookService.getBookByName(name);
+        return bookService.getBookByName(name);
     }
 
     @GetMapping("/get/price/{price}")
@@ -68,9 +68,19 @@ public class BookController {
         return bookService.getBookByDescription(description);
     }
 
+    @GetMapping("/get/status/{status}")
+    public List<BookWrapper> getBookByStatus(@PathVariable(name = "status") String status) {
+        return bookService.getBookByStatus(status);
+    }
+
+    @GetMapping("/get/book/{bookId}")
+    public BookResponse getBookById(@PathVariable(name = "bookId") Long bookId) {
+        return bookService.getBookById(bookId);
+    }
+
     @PutMapping("/{userId}/update/{bookId}")
     public ResponseEntity<BookResponse> updateBook(@AuthenticationPrincipal User user, @PathVariable Long userId,
-                                                      @PathVariable Long bookId, @RequestBody BookRequest bookRequest) {
+                                                   @PathVariable Long bookId, @RequestBody BookRequest bookRequest) {
         return bookService.updateBook(user, userId, bookId, bookRequest);
     }
 

@@ -8,24 +8,26 @@ import az.developia.librarysystemname.error.ErrorMessage;
 import az.developia.librarysystemname.exception.ServiceException;
 import az.developia.librarysystemname.exception.UserAlreadyExistException;
 import az.developia.librarysystemname.mapper.UserMapper;
+import az.developia.librarysystemname.repository.UserCriteriaRepository;
 import az.developia.librarysystemname.repository.UserRepository;
 import az.developia.librarysystemname.request.UserLoginRequest;
 import az.developia.librarysystemname.request.UserRegistrationRequest;
 import az.developia.librarysystemname.request.UserRequest;
 import az.developia.librarysystemname.response.UserResponse;
-import az.developia.librarysystemname.security.JwtRequestFilter;
 import az.developia.librarysystemname.security.JwtUtil;
 import az.developia.librarysystemname.util.LibraryUtil;
+import az.developia.librarysystemname.wrapper.UserWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 import static az.developia.librarysystemname.constant.LibraryConstant.SOMETHING_WENT_WRONG;
+import static az.developia.librarysystemname.constant.LibraryConstant.SUCCESSFULLY_USER_DELETED;
 import static az.developia.librarysystemname.constant.LibraryConstant.SUCCESSFULLY_USER_UPDATED;
 import static az.developia.librarysystemname.constant.LibraryConstant.UNAUTHORIZED_ACCESS;
 import static az.developia.librarysystemname.constant.LibraryConstant.USER_NOT_FOUND;
@@ -44,7 +46,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final EncryptionService encryptionService;
     private final JwtUtil jwtUtil;
-    private final JwtRequestFilter jwtRequestFilter;
+    private final UserCriteriaRepository criteriaRepository;
 
     public UserResponse register(UserRegistrationRequest registrationRequest)
             throws UserAlreadyExistException {
@@ -76,20 +78,33 @@ public class UserService {
         return LibraryConstant.BAD_CREDENTIALS;
     }
 
-    public ResponseEntity<String> update(Long userId, UserRequest userRequest) {
-        Optional<User> optionalUser = userRepository.findById(userId);
-        try {
-            if (optionalUser.isPresent() && (optionalUser.get().getStatus().equalsIgnoreCase(Role.LIBRARIAN.name()))) {
-                User user = userMapper.fromToRequestToModel(userRequest);
-                userRepository.save(user);
-                return LibraryUtil.getResponseMessage(SUCCESSFULLY_USER_UPDATED, OK);
-            } else
-                return LibraryUtil.getResponseMessage(UNAUTHORIZED_ACCESS, UNAUTHORIZED);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            log.info(ex.getMessage());
-        }
-        return LibraryUtil.getResponseMessage(SOMETHING_WENT_WRONG, INTERNAL_SERVER_ERROR);
+    public UserResponse getUserById(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> ServiceException.of(ErrorCode.USER_NOT_FOUND.name(), ErrorMessage.USER_NOT_FOUND));
+        return userMapper.fromModelToResponse(user);
+    }
+
+    public List<UserWrapper> getUserByFirstName(String firstName) {
+        return userMapper.fromModelToWrapper(userRepository.findByFirstName(firstName));
+    }
+
+    public List<UserWrapper> getUserByLastName(String lastName) {
+        return userMapper.fromModelToWrapper(userRepository.findByLastName(lastName));
+    }
+
+    public List<UserWrapper> getUserByStatus(String status) {
+        return userMapper.fromModelToWrapper(userRepository.findByStatus(status));
+    }
+
+    public UserResponse updateUser(Long userId, UserRequest userRequest) {
+        User findUser = userRepository.findById(userId).orElseThrow(
+                () -> ServiceException.of(ErrorCode.USER_NOT_FOUND.name(), ErrorMessage.USER_NOT_FOUND)
+        );
+        User user = userMapper.fromToRequestToModel(userRequest);
+        user.setId(findUser.getId());
+        user.setPassword(encryptionService.encryptPassword(userRequest.getPassword()));
+        userRepository.save(user);
+        return userMapper.fromModelToResponse(user);
     }
 
     public ResponseEntity<String> updateStatus(Long userId, UserRegistrationRequest registrationRequest) {
@@ -112,6 +127,34 @@ public class UserService {
             ex.printStackTrace();
         }
         return LibraryUtil.getResponseMessage(SOMETHING_WENT_WRONG, INTERNAL_SERVER_ERROR);
+    }
+
+    public ResponseEntity<UserResponse> updateUserByLibrarian(Long checkedId, Long userId, UserRequest userRequest) {
+        Optional<User> findUser = userRepository.findById(checkedId);
+        User refUser = findUser.get();
+        if (refUser.getUserRole().equalsIgnoreCase(Role.LIBRARIAN.name())) {
+            if (userRequest.getId() == userId) {
+                Optional<User> optionalUser = userRepository.findById(userId);
+                if (optionalUser.isPresent()) {
+                    User user = userMapper.fromToRequestToModel(userRequest);
+                    user.setId(userRequest.getId());
+                    user.setPassword(encryptionService.encryptPassword(userRequest.getPassword()));
+                    return ResponseEntity.ok(userMapper.fromModelToResponse(userRepository.save(user)));
+                } else
+                    throw ServiceException.of(ErrorCode.USER_NOT_FOUND.name(), ErrorMessage.USER_NOT_FOUND);
+            }
+        } else
+            throw ServiceException.of(ErrorCode.UNAUTHORIZED_ACCESS.name(), ErrorMessage.UNAUTHORIZED_ACCESS);
+        return ResponseEntity.status(BAD_REQUEST).build();
+    }
+
+    public ResponseEntity<String> delete(Long userId) {
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isPresent()) {
+            userRepository.deleteById(optionalUser.get().getId());
+            return LibraryUtil.getResponseMessage(SUCCESSFULLY_USER_DELETED, OK);
+        } else
+            throw ServiceException.of(ErrorCode.USER_NOT_FOUND.name(), ErrorMessage.USER_NOT_FOUND);
     }
 
     private boolean validationSignup(UserRegistrationRequest registrationRequest) {

@@ -15,7 +15,6 @@ import az.developia.librarysystemname.util.LibraryUtil;
 import az.developia.librarysystemname.wrapper.BookWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -27,8 +26,7 @@ import static az.developia.librarysystemname.constant.LibraryConstant.ADDED_SUCC
 import static az.developia.librarysystemname.constant.LibraryConstant.DOES_NOT_EXIST;
 import static az.developia.librarysystemname.constant.LibraryConstant.INVALID_DATA;
 import static az.developia.librarysystemname.constant.LibraryConstant.SOMETHING_WENT_WRONG;
-import static az.developia.librarysystemname.constant.LibraryConstant.SUCCESSFULLY_BOOK_UPDATED;
-import static az.developia.librarysystemname.constant.LibraryConstant.SUCCESSFULLY_DELETED;
+import static az.developia.librarysystemname.constant.LibraryConstant.SUCCESSFULLY_BOOK_DELETED;
 import static az.developia.librarysystemname.constant.LibraryConstant.UNAUTHORIZED_ACCESS;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
@@ -85,11 +83,17 @@ public class BookService {
         return ResponseEntity.status(BAD_REQUEST).build();
     }
 
+    public BookResponse getBookById(Long bookId) {
+        Book book = bookRepository.findById(bookId).orElseThrow(
+                () -> ServiceException.of(ErrorCode.BOOK_NOT_FOUND.name(), ErrorMessage.BOOK_NOT_FOUND));
+        return bookMapper.fromModelToResponse(book);
+    }
+
     public ResponseEntity<String> deleteBook(Long id) {
         Optional<Book> optionalBook = bookRepository.findById(id);
         if (optionalBook.isPresent()) {
             bookRepository.deleteById(id);
-            return LibraryUtil.getResponseMessage(SUCCESSFULLY_DELETED, OK);
+            return LibraryUtil.getResponseMessage(SUCCESSFULLY_BOOK_DELETED, OK);
         }
         return LibraryUtil.getResponseMessage(DOES_NOT_EXIST, NOT_FOUND);
     }
@@ -114,6 +118,10 @@ public class BookService {
 
     public List<BookWrapper> getBookByDescription(String description) {
         return bookMapper.fromModelToWrapper(bookRepository.findByDescription(description));
+    }
+
+    public List<BookWrapper> getBookByStatus(String status) {
+        return bookMapper.fromModelToWrapper(bookRepository.findBookByStatus(status));
     }
 
     public ResponseEntity<List<BookWrapper>> getAllBookByUserId(Long userId) {
