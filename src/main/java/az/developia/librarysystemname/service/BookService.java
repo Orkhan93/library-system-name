@@ -104,6 +104,18 @@ public class BookService {
         return new ResponseEntity<>(new ArrayList<>(), INTERNAL_SERVER_ERROR);
     }
 
+    public List<BookWrapper> getBookByName(String name) {
+        return bookMapper.fromModelToWrapper(bookRepository.findByName(name));
+    }
+
+    public List<BookWrapper> getBookByPrice(String price) {
+        return bookMapper.fromModelToWrapper(bookRepository.findByPrice(price));
+    }
+
+    public List<BookWrapper> getBookByDescription(String description) {
+        return bookMapper.fromModelToWrapper(bookRepository.findByDescription(description));
+    }
+
     public ResponseEntity<List<BookWrapper>> getAllBookByUserId(Long userId) {
         try {
             Optional<User> optionalUser = userRepository.findById(userId);

@@ -53,6 +53,21 @@ public class BookController {
         return new ResponseEntity<>(new ArrayList<>(), INTERNAL_SERVER_ERROR);
     }
 
+    @GetMapping("/get/name/{name}")
+    public List<BookWrapper> getBookByName(@PathVariable(name = "name") String name) {
+       return bookService.getBookByName(name);
+    }
+
+    @GetMapping("/get/price/{price}")
+    public List<BookWrapper> getBookByPrice(@PathVariable(name = "price") String price) {
+        return bookService.getBookByPrice(price);
+    }
+
+    @GetMapping("/get/description/{description}")
+    public List<BookWrapper> getBookByDescription(@PathVariable(name = "description") String description) {
+        return bookService.getBookByDescription(description);
+    }
+
     @PutMapping("/{userId}/update/{bookId}")
     public ResponseEntity<BookResponse> updateBook(@AuthenticationPrincipal User user, @PathVariable Long userId,
                                                       @PathVariable Long bookId, @RequestBody BookRequest bookRequest) {
