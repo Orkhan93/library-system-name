@@ -19,4 +19,6 @@ public interface BookRepository extends JpaRepository<Book, Long> , JpaSpecifica
 
     List<Book> findByDescription(String description);
 
+    List<Book> findBookByStatus(String status);
+
 }
