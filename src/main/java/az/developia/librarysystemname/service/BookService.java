@@ -9,6 +9,7 @@ import az.developia.librarysystemname.exception.ServiceException;
 import az.developia.librarysystemname.mapper.BookMapper;
 import az.developia.librarysystemname.repository.BookRepository;
 import az.developia.librarysystemname.repository.UserRepository;
+import az.developia.librarysystemname.request.BookAddRequest;
 import az.developia.librarysystemname.request.BookRequest;
 import az.developia.librarysystemname.response.BookResponse;
 import az.developia.librarysystemname.util.LibraryUtil;
@@ -43,9 +44,9 @@ public class BookService {
     private final UserRepository userRepository;
     private final BookMapper bookMapper;
 
-    public ResponseEntity<String> addBook(BookRequest bookRequest) {
+    public ResponseEntity<String> addBook(BookAddRequest bookRequest) {
         log.info("Inside bookRequest {}", bookRequest);
-        Optional<User> optionalUser = userRepository.findById(bookRequest.getUser().getId());
+        Optional<User> optionalUser = userRepository.findById(bookRequest.getUserId());
         User user = optionalUser.get();
         try {
             if (user.getUserRole().equalsIgnoreCase(Role.LIBRARIAN.name())) {
@@ -137,9 +138,9 @@ public class BookService {
         return new ResponseEntity<>(new ArrayList<>(), INTERNAL_SERVER_ERROR);
     }
 
-    private Book getBookFromRequest(BookRequest bookRequest, boolean isAdd) {
+    private Book getBookFromRequest(BookAddRequest bookRequest, boolean isAdd) {
         User user = new User();
-        user.setId(bookRequest.getUser().getId());
+        user.setId(bookRequest.getUserId());
 
         Book book = new Book();
         if (isAdd) {
@@ -154,7 +155,7 @@ public class BookService {
         return book;
     }
 
-    private boolean validationBookRequest(BookRequest bookRequest, boolean validateId) {
+    private boolean validationBookRequest(BookAddRequest bookRequest, boolean validateId) {
         if (bookRequest.getName() != null && bookRequest.getPrice() != null && bookRequest.getDescription() != null) {
             if (bookRequest.getId() != null && validateId) {
                 return true;
