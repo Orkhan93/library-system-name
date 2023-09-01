@@ -1,7 +1,7 @@
 package az.developia.librarysystemname.controller;
 
-import az.developia.librarysystemname.entity.Book;
 import az.developia.librarysystemname.entity.User;
+import az.developia.librarysystemname.request.BookAddRequest;
 import az.developia.librarysystemname.request.BookRequest;
 import az.developia.librarysystemname.response.BookResponse;
 import az.developia.librarysystemname.service.BookService;
@@ -34,7 +34,7 @@ public class BookController {
     private final BookService bookService;
 
     @PostMapping("/add")
-    public ResponseEntity<String> addProduct(@Valid @RequestBody BookRequest bookRequest) {
+    public ResponseEntity<String> addProduct(@Valid @RequestBody BookAddRequest bookRequest) {
         try {
             return bookService.addBook(bookRequest);
         } catch (Exception ex) {
