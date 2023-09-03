@@ -1,6 +1,7 @@
 package az.developia.librarysystemname.service;
 
 import az.developia.librarysystemname.constant.LibraryConstant;
+import az.developia.librarysystemname.entity.Library;
 import az.developia.librarysystemname.entity.User;
 import az.developia.librarysystemname.enums.ErrorCode;
 import az.developia.librarysystemname.enums.Role;
@@ -8,7 +9,7 @@ import az.developia.librarysystemname.error.ErrorMessage;
 import az.developia.librarysystemname.exception.ServiceException;
 import az.developia.librarysystemname.exception.UserAlreadyExistException;
 import az.developia.librarysystemname.mapper.UserMapper;
-import az.developia.librarysystemname.repository.UserCriteriaRepository;
+import az.developia.librarysystemname.repository.LibraryRepository;
 import az.developia.librarysystemname.repository.UserRepository;
 import az.developia.librarysystemname.request.UserLoginRequest;
 import az.developia.librarysystemname.request.UserRegistrationRequest;
@@ -20,7 +21,6 @@ import az.developia.librarysystemname.wrapper.UserWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -43,10 +43,9 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final PasswordEncoder passwordEncoder;
     private final EncryptionService encryptionService;
     private final JwtUtil jwtUtil;
-    private final UserCriteriaRepository criteriaRepository;
+    private final LibraryRepository libraryRepository;
 
     public UserResponse register(UserRegistrationRequest registrationRequest)
             throws UserAlreadyExistException {
@@ -56,8 +55,7 @@ public class UserService {
             throw UserAlreadyExistException.of(ErrorCode.ALREADY_EXIST.name(), ErrorMessage.USER_ALREADY_EXITS);
         }
         if (validationSignup(registrationRequest)) {
-            User user = userMapper.fromUserRegisterRequestToModel(registrationRequest);
-            user.setPassword(passwordEncoder.encode(registrationRequest.getPassword()));
+            User user = userRepository.save(getUserFromRequest(registrationRequest, false));
             return userMapper.fromModelToResponse(userRepository.save(user));
         } else
             throw UserAlreadyExistException.of(ErrorCode.INTERNAL_SERVER_ERROR.name(), ErrorMessage.SOMETHING_WENT_WRONG);
@@ -97,6 +95,7 @@ public class UserService {
     }
 
     public UserResponse updateUser(Long userId, UserRequest userRequest) {
+        log.info("Inside userRequest {}", userRequest);
         User findUser = userRepository.findById(userId).orElseThrow(
                 () -> ServiceException.of(ErrorCode.USER_NOT_FOUND.name(), ErrorMessage.USER_NOT_FOUND)
         );
@@ -108,6 +107,7 @@ public class UserService {
     }
 
     public ResponseEntity<String> updateStatus(Long userId, UserRegistrationRequest registrationRequest) {
+        log.info("Inside updateStatus {}", registrationRequest);
         try {
             Optional<User> findUser = userRepository.findById(userId);
             User user = findUser.get();
@@ -130,14 +130,19 @@ public class UserService {
     }
 
     public ResponseEntity<UserResponse> updateUserByLibrarian(Long checkedId, Long userId, UserRequest userRequest) {
+        log.info("Inside updateUserByLibrarian {}", userRequest);
         Optional<User> findUser = userRepository.findById(checkedId);
         User refUser = findUser.get();
         if (refUser.getUserRole().equalsIgnoreCase(Role.LIBRARIAN.name())) {
             if (userRequest.getId() == userId) {
                 Optional<User> optionalUser = userRepository.findById(userId);
                 if (optionalUser.isPresent()) {
+                    Library library = libraryRepository.findById(userRequest.getLibraryId()).orElseThrow(
+                            () -> ServiceException.of(ErrorCode.LIBRARY_NOT_FOUND.name(), ErrorMessage.LIBRARY_NOT_FOUND)
+                    );
                     User user = userMapper.fromToRequestToModel(userRequest);
                     user.setId(userRequest.getId());
+                    user.setLibrary(library);
                     user.setPassword(encryptionService.encryptPassword(userRequest.getPassword()));
                     return ResponseEntity.ok(userMapper.fromModelToResponse(userRepository.save(user)));
                 } else
@@ -165,6 +170,25 @@ public class UserService {
             return true;
         }
         return false;
+    }
+
+    private User getUserFromRequest(UserRegistrationRequest registrationRequest, boolean isAdd) {
+        Library library = new Library();
+        library.setId(registrationRequest.getLibraryId());
+
+        User user = new User();
+        if (isAdd) {
+            user.setId(registrationRequest.getId());
+        }
+        user.setLibrary(library);
+        user.setUsername(registrationRequest.getUsername());
+        user.setEmail(registrationRequest.getEmail());
+        user.setPassword(encryptionService.encryptPassword(registrationRequest.getPassword()));
+        user.setUserRole("student");
+        user.setStatus("false");
+        user.setFirstName(registrationRequest.getFirstName());
+        user.setLastName(registrationRequest.getLastName());
+        return user;
     }
 
 }

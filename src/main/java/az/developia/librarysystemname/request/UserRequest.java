@@ -13,5 +13,6 @@ public class UserRequest {
     private String lastName;
     private final String userRole;
     private final String status;
+    private Long libraryId;
 
 }

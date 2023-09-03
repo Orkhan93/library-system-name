@@ -14,7 +14,7 @@ import jakarta.persistence.Table;
 import lombok.Data;
 
 @NamedQuery(name = "Book.getAllProduct",
-        query = "select new az.developia.librarysystemname.wrapper.BookWrapper(b.id,b.name,b.description,b.price,b.status,b.user)" +
+        query = "select new az.developia.librarysystemname.wrapper.BookWrapper(b.id,b.name,b.description,b.price,b.status,b.user,b.library)" +
                 " from Book b inner join User u on b.user.id=u.id and u.userRole='librarian'")
 
 @Entity
@@ -43,5 +43,9 @@ public class Book {
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "library_id", nullable = false)
+    private Library library;
 
 }

@@ -24,7 +24,9 @@ public class BookAddRequest {
     @NotNull
     @NotBlank
     private String price;
+
     private String status;
     private Long userId;
+    private Long libraryId;
 
 }

@@ -1,5 +1,6 @@
 package az.developia.librarysystemname.response;
 
+import az.developia.librarysystemname.entity.Library;
 import az.developia.librarysystemname.entity.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -17,5 +18,8 @@ public class BookResponse {
 
     @JsonIgnore
     private User user;
+
+    @JsonIgnore
+    private Library library;
 
 }
