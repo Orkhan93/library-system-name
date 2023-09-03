@@ -1,6 +1,7 @@
 package az.developia.librarysystemname.service;
 
 import az.developia.librarysystemname.entity.Book;
+import az.developia.librarysystemname.entity.Library;
 import az.developia.librarysystemname.entity.User;
 import az.developia.librarysystemname.enums.ErrorCode;
 import az.developia.librarysystemname.enums.Role;
@@ -8,6 +9,7 @@ import az.developia.librarysystemname.error.ErrorMessage;
 import az.developia.librarysystemname.exception.ServiceException;
 import az.developia.librarysystemname.mapper.BookMapper;
 import az.developia.librarysystemname.repository.BookRepository;
+import az.developia.librarysystemname.repository.LibraryRepository;
 import az.developia.librarysystemname.repository.UserRepository;
 import az.developia.librarysystemname.request.BookAddRequest;
 import az.developia.librarysystemname.request.BookRequest;
@@ -24,8 +26,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static az.developia.librarysystemname.constant.LibraryConstant.ADDED_SUCCESSFULLY;
+import static az.developia.librarysystemname.constant.LibraryConstant.BOOK_ALREADY_EXIST;
 import static az.developia.librarysystemname.constant.LibraryConstant.DOES_NOT_EXIST;
-import static az.developia.librarysystemname.constant.LibraryConstant.INVALID_DATA;
 import static az.developia.librarysystemname.constant.LibraryConstant.SOMETHING_WENT_WRONG;
 import static az.developia.librarysystemname.constant.LibraryConstant.SUCCESSFULLY_BOOK_DELETED;
 import static az.developia.librarysystemname.constant.LibraryConstant.UNAUTHORIZED_ACCESS;
@@ -42,6 +44,7 @@ public class BookService {
 
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
+    private final LibraryRepository libraryRepository;
     private final BookMapper bookMapper;
 
     public ResponseEntity<String> addBook(BookAddRequest bookRequest) {
@@ -50,11 +53,13 @@ public class BookService {
         User user = optionalUser.get();
         try {
             if (user.getUserRole().equalsIgnoreCase(Role.LIBRARIAN.name())) {
-                if (validationBookRequest(bookRequest, false)) {
+                Optional<Book> optionalBook =
+                        bookRepository.findByNameAndDescription(bookRequest.getName(), bookRequest.getDescription());
+                if (validationBookRequest(bookRequest, false) && optionalBook.isEmpty()) {
                     bookRepository.save(getBookFromRequest(bookRequest, false));
                     return LibraryUtil.getResponseMessage(ADDED_SUCCESSFULLY, OK);
                 }
-                return LibraryUtil.getResponseMessage(INVALID_DATA, BAD_REQUEST);
+                return LibraryUtil.getResponseMessage(BOOK_ALREADY_EXIST, BAD_REQUEST);
             } else
                 return LibraryUtil.getResponseMessage(UNAUTHORIZED_ACCESS, UNAUTHORIZED);
         } catch (Exception ex) {
@@ -70,8 +75,11 @@ public class BookService {
             if (bookRequest.getId() == bookId) {
                 Optional<Book> optionalBook = bookRepository.findById(bookId);
                 if (optionalBook.isPresent()) {
+                    Optional<Library> optionalLibrary = libraryRepository.findById(optionalBook.get().getLibrary().getId());
                     User optionalUser = optionalBook.get().getUser();
-                    if (optionalUser.getId() == userId) {
+                    if (optionalUser.getId() == userId && optionalLibrary.isPresent()) {
+                        Library library = optionalLibrary.get();
+                        bookRequest.setLibrary(library);
                         bookRequest.setUser(optionalUser);
                         return ResponseEntity.ok(bookMapper.fromModelToResponse
                                 (bookRepository.save(bookMapper.fromRequestToModel(bookRequest))));
@@ -142,6 +150,9 @@ public class BookService {
         User user = new User();
         user.setId(bookRequest.getUserId());
 
+        Library library = new Library();
+        library.setId(bookRequest.getLibraryId());
+
         Book book = new Book();
         if (isAdd) {
             book.setId(bookRequest.getId());
@@ -149,6 +160,7 @@ public class BookService {
             book.setStatus("true");
         }
         book.setUser(user);
+        book.setLibrary(library);
         book.setName(bookRequest.getName());
         book.setDescription(bookRequest.getDescription());
         book.setPrice(bookRequest.getPrice());
