@@ -94,10 +94,20 @@ public class BookController {
         return LibraryUtil.getResponseMessage(SOMETHING_WENT_WRONG, INTERNAL_SERVER_ERROR);
     }
 
-    @GetMapping("/get/{userId}")
+    @GetMapping("/get/byUser{userId}")
     public ResponseEntity<List<BookWrapper>> getAllBookByUserId(@PathVariable(name = "userId") Long userId) {
         try {
             return bookService.getAllBookByUserId(userId);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return new ResponseEntity<>(new ArrayList<>(), INTERNAL_SERVER_ERROR);
+    }
+
+    @GetMapping("/get/byLibrary/{libraryId}")
+    public ResponseEntity<List<BookWrapper>> getAllBookByLibraryId(@PathVariable(name = "libraryId") Long libraryId) {
+        try {
+            return bookService.getAllBookByLibraryId(libraryId);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

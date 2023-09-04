@@ -6,6 +6,7 @@ public class LibraryConstant {
     public static final String INVALID_DATA = "Invalid data.";
     public static final String USER_ALREADY_EXIST = "User already exist.";
     public static final String USER_NOT_FOUND = "User not found.";
+    public static final String LIBRARY_NOT_FOUND = "Library not found.";
     public static final String SUCCESSFULLY_REGISTER = "Successfully register.";
     public static final String UNAUTHORIZED_ACCESS = "Unauthorized access.";
     public static final String WAIT_FOR_APPROVAL = "Wait for librarian approval.";
@@ -17,6 +18,7 @@ public class LibraryConstant {
     public static final String SUCCESSFULLY_BOOK_DELETED = "Book deleted successfully.";
     public static final String SUCCESSFULLY_USER_DELETED = "User deleted successfully.";
     public static final String LIBRARY_ALREADY_EXIST = "Library already exist.";
+    public static final String SUCCESSFULLY_DELETED_LIBRARY = "Library deleted successfully.";
     public static final String BOOK_ALREADY_EXIST = "Book already exist.";
 
 }
