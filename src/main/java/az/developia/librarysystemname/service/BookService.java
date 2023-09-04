@@ -146,6 +146,19 @@ public class BookService {
         return new ResponseEntity<>(new ArrayList<>(), INTERNAL_SERVER_ERROR);
     }
 
+    public ResponseEntity<List<BookWrapper>> getAllBookByLibraryId(Long libraryId) {
+        try {
+            Optional<Library> optionalLibrary = libraryRepository.findById(libraryId);
+            if (optionalLibrary.isPresent()) {
+                return new ResponseEntity<>(bookMapper.fromModelToWrapper(bookRepository.findByLibrary_Id(libraryId)), OK);
+            } else
+                return ResponseEntity.status(NOT_FOUND).build();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return new ResponseEntity<>(new ArrayList<>(), INTERNAL_SERVER_ERROR);
+    }
+
     private Book getBookFromRequest(BookAddRequest bookRequest, boolean isAdd) {
         User user = new User();
         user.setId(bookRequest.getUserId());
