@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,6 +34,7 @@ import static az.developia.librarysystemname.constant.LibraryConstant.UNAUTHORIZ
 import static az.developia.librarysystemname.constant.LibraryConstant.USER_NOT_FOUND;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
@@ -92,6 +94,24 @@ public class UserService {
 
     public List<UserWrapper> getUserByStatus(String status) {
         return userMapper.fromModelToWrapper(userRepository.findByStatus(status));
+    }
+
+    public ResponseEntity<List<UserWrapper>> getAllUsersByLibraryId(Long checkId, Long libraryId) {
+        try {
+            Optional<User> optionalUser = userRepository.findById(checkId);
+            if (optionalUser.isPresent() && optionalUser.get().getUserRole().equalsIgnoreCase(Role.LIBRARIAN.name())) {
+                Optional<Library> optionalLibrary = libraryRepository.findById(libraryId);
+                if (optionalLibrary.isPresent()) {
+                    return new ResponseEntity<>
+                            (userMapper.fromModelToWrapper(userRepository.findByLibrary_Id(libraryId)), OK);
+                } else
+                    return ResponseEntity.status(NOT_FOUND).build();
+            } else
+                return ResponseEntity.status(UNAUTHORIZED).build();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return new ResponseEntity<>(new ArrayList<>(), INTERNAL_SERVER_ERROR);
     }
 
     public UserResponse updateUser(Long userId, UserRequest userRequest) {

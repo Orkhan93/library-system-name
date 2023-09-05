@@ -21,6 +21,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByLastName(String lastName);
     List<User> findByStatus(String status);
 
+    List<User> findByLibrary_Id(Long id);
+
     @Transactional
     @Modifying
     Integer updateStatus(@Param("status") String status, @Param("id") Integer id);
