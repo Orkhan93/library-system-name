@@ -24,7 +24,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 @RestController
 @RequestMapping("/user")
@@ -63,7 +66,7 @@ public class UserController {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        return LibraryUtil.getResponseMessage(LibraryConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+        return LibraryUtil.getResponseMessage(LibraryConstant.SOMETHING_WENT_WRONG, INTERNAL_SERVER_ERROR);
     }
 
     @GetMapping("/get/{userId}")
@@ -84,6 +87,17 @@ public class UserController {
     @GetMapping("/get/status/{status}")
     public List<UserWrapper> getUserByStatus(@PathVariable(name = "status") String status) {
         return userService.getUserByStatus(status);
+    }
+
+    @GetMapping("/get/{checkId}/byLibrary/{libraryId}")
+    public ResponseEntity<List<UserWrapper>> getAllUsersByLibraryId(@PathVariable(name = "checkId") Long checkId,
+                                                                    @PathVariable(name = "libraryId") Long libraryId) {
+        try {
+            return userService.getAllUsersByLibraryId(checkId, libraryId);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return new ResponseEntity<>(new ArrayList<>(), INTERNAL_SERVER_ERROR);
     }
 
     @PutMapping("/update/{userId}")
