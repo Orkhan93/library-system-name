@@ -1,7 +1,6 @@
 package az.developia.librarysystemname.controller;
 
 import az.developia.librarysystemname.constant.LibraryConstant;
-import az.developia.librarysystemname.error.ErrorMessage;
 import az.developia.librarysystemname.exception.UserAlreadyExistException;
 import az.developia.librarysystemname.request.UserLoginRequest;
 import az.developia.librarysystemname.request.UserRegistrationRequest;
@@ -24,10 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 @RestController
 @RequestMapping("/user")
@@ -39,12 +35,8 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<String> register(@Valid @RequestBody UserRegistrationRequest registrationRequest)
             throws UserAlreadyExistException {
-        try {
             userService.register(registrationRequest);
             return LibraryUtil.getResponseMessage(LibraryConstant.SUCCESSFULLY_REGISTER, HttpStatus.OK);
-        } catch (UserAlreadyExistException ex) {
-            return new ResponseEntity<String>(ErrorMessage.USER_ALREADY_EXITS, HttpStatus.BAD_REQUEST);
-        }
     }
 
     @PostMapping("/login")
@@ -61,12 +53,7 @@ public class UserController {
 
     @PostMapping("/updateStatus/{userId}")
     public ResponseEntity<String> updateStatus(@PathVariable Long userId, @RequestBody UserRegistrationRequest registrationRequest) {
-        try {
             return userService.updateStatus(userId, registrationRequest);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return LibraryUtil.getResponseMessage(LibraryConstant.SOMETHING_WENT_WRONG, INTERNAL_SERVER_ERROR);
     }
 
     @GetMapping("/get/{userId}")
@@ -92,12 +79,7 @@ public class UserController {
     @GetMapping("/get/{checkId}/byLibrary/{libraryId}")
     public ResponseEntity<List<UserWrapper>> getAllUsersByLibraryId(@PathVariable(name = "checkId") Long checkId,
                                                                     @PathVariable(name = "libraryId") Long libraryId) {
-        try {
             return userService.getAllUsersByLibraryId(checkId, libraryId);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return new ResponseEntity<>(new ArrayList<>(), INTERNAL_SERVER_ERROR);
     }
 
     @PutMapping("/update/{userId}")

@@ -5,7 +5,6 @@ import az.developia.librarysystemname.request.BookAddRequest;
 import az.developia.librarysystemname.request.BookRequest;
 import az.developia.librarysystemname.response.BookResponse;
 import az.developia.librarysystemname.service.BookService;
-import az.developia.librarysystemname.util.LibraryUtil;
 import az.developia.librarysystemname.wrapper.BookWrapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,11 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import static az.developia.librarysystemname.constant.LibraryConstant.SOMETHING_WENT_WRONG;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 @RestController
 @RequestMapping("/book")
@@ -35,22 +30,12 @@ public class BookController {
 
     @PostMapping("/add")
     public ResponseEntity<String> addProduct(@Valid @RequestBody BookAddRequest bookRequest) {
-        try {
             return bookService.addBook(bookRequest);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return LibraryUtil.getResponseMessage(SOMETHING_WENT_WRONG, INTERNAL_SERVER_ERROR);
     }
 
     @GetMapping("/get")
     public ResponseEntity<List<BookWrapper>> getAllBook() {
-        try {
             return bookService.getAllBook();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return new ResponseEntity<>(new ArrayList<>(), INTERNAL_SERVER_ERROR);
     }
 
     @GetMapping("/get/name/{name}")
@@ -86,32 +71,17 @@ public class BookController {
 
     @DeleteMapping("{bookId}")
     public ResponseEntity<String> deleteBook(@PathVariable Long bookId) {
-        try {
             return bookService.deleteBook(bookId);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return LibraryUtil.getResponseMessage(SOMETHING_WENT_WRONG, INTERNAL_SERVER_ERROR);
     }
 
-    @GetMapping("/get/byUser{userId}")
+    @GetMapping("/get/byUser/{userId}")
     public ResponseEntity<List<BookWrapper>> getAllBookByUserId(@PathVariable(name = "userId") Long userId) {
-        try {
             return bookService.getAllBookByUserId(userId);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return new ResponseEntity<>(new ArrayList<>(), INTERNAL_SERVER_ERROR);
     }
 
     @GetMapping("/get/byLibrary/{libraryId}")
     public ResponseEntity<List<BookWrapper>> getAllBookByLibraryId(@PathVariable(name = "libraryId") Long libraryId) {
-        try {
             return bookService.getAllBookByLibraryId(libraryId);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return new ResponseEntity<>(new ArrayList<>(), INTERNAL_SERVER_ERROR);
     }
 
 }

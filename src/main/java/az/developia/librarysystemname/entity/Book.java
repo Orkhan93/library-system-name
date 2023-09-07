@@ -1,6 +1,7 @@
 package az.developia.librarysystemname.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -9,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 
@@ -46,5 +48,10 @@ public class Book {
     @ManyToOne(optional = false)
     @JoinColumn(name = "library_id", nullable = false)
     private Library library;
+
+    @JsonIgnore
+    @OneToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "borrow_id", referencedColumnName = "id")
+    private Borrow borrow;
 
 }
