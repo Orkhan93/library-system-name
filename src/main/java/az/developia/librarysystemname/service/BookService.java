@@ -3,8 +3,8 @@ package az.developia.librarysystemname.service;
 import az.developia.librarysystemname.entity.Book;
 import az.developia.librarysystemname.entity.Library;
 import az.developia.librarysystemname.entity.User;
-import az.developia.librarysystemname.enums.ErrorCode;
 import az.developia.librarysystemname.enums.Role;
+
 import az.developia.librarysystemname.error.ErrorMessage;
 import az.developia.librarysystemname.exception.ServiceException;
 import az.developia.librarysystemname.mapper.BookMapper;
@@ -14,6 +14,7 @@ import az.developia.librarysystemname.repository.UserRepository;
 import az.developia.librarysystemname.request.BookAddRequest;
 import az.developia.librarysystemname.request.BookRequest;
 import az.developia.librarysystemname.response.BookResponse;
+
 import az.developia.librarysystemname.util.LibraryUtil;
 import az.developia.librarysystemname.wrapper.BookWrapper;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ import static az.developia.librarysystemname.constant.LibraryConstant.BOOK_ALREA
 import static az.developia.librarysystemname.constant.LibraryConstant.DOES_NOT_EXIST;
 import static az.developia.librarysystemname.constant.LibraryConstant.SOMETHING_WENT_WRONG;
 import static az.developia.librarysystemname.constant.LibraryConstant.SUCCESSFULLY_BOOK_DELETED;
+import static az.developia.librarysystemname.constant.LibraryConstant.SUCCESSFULLY_DELETED;
 import static az.developia.librarysystemname.constant.LibraryConstant.UNAUTHORIZED_ACCESS;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
@@ -96,6 +98,46 @@ public class BookService {
         Book book = bookRepository.findById(bookId).orElseThrow(
                 () -> ServiceException.of(ErrorCode.BOOK_NOT_FOUND.name(), ErrorMessage.BOOK_NOT_FOUND));
         return bookMapper.fromModelToResponse(book);
+    public ResponseEntity<Book> updateBook(User user, Long userId, Long bookId, BookRequest bookRequest) {
+        Optional<User> findUser = userRepository.findById(userId);
+        if (findUser.isPresent() && findUser.get().getUserRole().equalsIgnoreCase(Role.LIBRARIAN.name())) {
+            if (bookRequest.getId() == bookId) {
+                Optional<Book> optionalBook = bookRepository.findById(bookId);
+                if (optionalBook.isPresent()) {
+                    User optionalUser = optionalBook.get().getUser();
+                    if (optionalUser.getId() == userId) {
+                        bookRequest.setUserId(optionalUser.getId());
+                        return ResponseEntity.ok(bookRepository.save(bookMapper.fromRequestToModel(bookRequest)));
+                    }
+                }
+            }
+        }
+
+
+//        Optional<User> optionalUser = userRepository.findById(bookRequest.getUserId());
+//        User user = optionalUser.get();
+//        try {
+//            if (user.getUserRole().equalsIgnoreCase(Role.LIBRARIAN.name())) {
+//                if (validationBookRequest(bookRequest, true)) {
+//                    Optional<Book> optionalBook = bookRepository.findById(bookId);
+//                    if (optionalBook.isPresent()) {
+//                        Book book = new Book();
+//                        book.setName(bookRequest.getName());
+//                        book.setPrice(bookRequest.getPrice());
+//                        book.setDescription(bookRequest.getDescription());
+//                        bookRepository.save(book);
+//                        return LibraryUtil.getResponseMessage(SUCCESSFULLY_UPDATED, OK);
+//                    } else
+//                        LibraryUtil.getResponseMessage(DOES_NOT_EXIST, OK);
+//                } else
+//                    LibraryUtil.getResponseMessage(INVALID_DATA, BAD_REQUEST);
+//            } else
+//                return LibraryUtil.getResponseMessage(UNAUTHORIZED_ACCESS, UNAUTHORIZED);
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//        }
+//        return LibraryUtil.getResponseMessage(SOMETHING_WENT_WRONG, INTERNAL_SERVER_ERROR);
+        return ResponseEntity.status(BAD_REQUEST).build();
     }
 
     public ResponseEntity<String> deleteBook(Long id) {

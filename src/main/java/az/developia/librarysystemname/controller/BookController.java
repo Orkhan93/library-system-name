@@ -2,6 +2,10 @@ package az.developia.librarysystemname.controller;
 
 import az.developia.librarysystemname.entity.User;
 import az.developia.librarysystemname.request.BookAddRequest;
+import az.developia.librarysystemname.constant.LibraryConstant;
+import az.developia.librarysystemname.entity.Book;
+import az.developia.librarysystemname.entity.User;
+
 import az.developia.librarysystemname.request.BookRequest;
 import az.developia.librarysystemname.response.BookResponse;
 import az.developia.librarysystemname.service.BookService;
@@ -82,6 +86,32 @@ public class BookController {
     @GetMapping("/get/byLibrary/{libraryId}")
     public ResponseEntity<List<BookWrapper>> getAllBookByLibraryId(@PathVariable(name = "libraryId") Long libraryId) {
             return bookService.getAllBookByLibraryId(libraryId);
+      
+    @PutMapping("/{userId}/book/{bookId}")
+    public ResponseEntity<Book> updateBook(@AuthenticationPrincipal User user,
+                                           @PathVariable Long userId,
+                                           @PathVariable Long bookId, @Valid @RequestBody BookRequest bookRequest) {
+        return bookService.updateBook(user, userId, bookId, bookRequest);
+    }
+
+    @DeleteMapping("{bookId}")
+    public ResponseEntity<String> deleteBook(@PathVariable Long bookId) {
+        try {
+            return bookService.deleteBook(bookId);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return LibraryUtil.getResponseMessage(SOMETHING_WENT_WRONG, INTERNAL_SERVER_ERROR);
+    }
+
+    @GetMapping("/get/{userId}")
+    public ResponseEntity<List<BookWrapper>> getAllBookByUserId(@PathVariable(name = "userId") Long userId) {
+        try {
+            return bookService.getAllBookByUserId(userId);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return new ResponseEntity<>(new ArrayList<>(), INTERNAL_SERVER_ERROR);
     }
 
 }
