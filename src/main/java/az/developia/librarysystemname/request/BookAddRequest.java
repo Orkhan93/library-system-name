@@ -1,8 +1,5 @@
 package az.developia.librarysystemname.request;
 
-import az.developia.librarysystemname.entity.Library;
-import az.developia.librarysystemname.entity.User;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -12,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class BookRequest {
+public class BookAddRequest {
 
     private Long id;
 
@@ -27,11 +24,9 @@ public class BookRequest {
     @NotNull
     @NotBlank
     private String price;
+
     private String status;
-
-    @JsonIgnore
-    private User user;
-
-    private Library library;
+    private Long userId;
+    private Long libraryId;
 
 }

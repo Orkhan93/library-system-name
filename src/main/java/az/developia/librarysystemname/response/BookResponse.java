@@ -1,16 +1,14 @@
-package az.developia.librarysystemname.wrapper;
+package az.developia.librarysystemname.response;
 
 import az.developia.librarysystemname.entity.Library;
 import az.developia.librarysystemname.entity.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class BookWrapper {
+@Setter
+@Getter
+public class BookResponse {
 
     private Long id;
     private String name;
@@ -21,6 +19,7 @@ public class BookWrapper {
     @JsonIgnore
     private User user;
 
+    @JsonIgnore
     private Library library;
 
 }
